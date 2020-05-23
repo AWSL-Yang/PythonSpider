@@ -1,0 +1,53 @@
+# -*- coding:UTF-8 -*-
+import requests
+import sys
+from bs4 import BeautifulSoup
+
+
+class GetTxt(object):
+
+    def __init__(self):
+        self.target = 'https://www.xsbiquge.com/'
+        self.url = input('请输入新笔趣阁（xbiquge6.com）小说链接：')
+        self.names = []  # 存放章节名
+        self.urls = []  # 存放章节链接
+        self.nums = 0
+        self.headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, "
+                                      "like Gecko) ""Chrome/78.0.3904.87 Safari/537.36 "
+                        }
+
+    def get_url(self):
+        req = requests.get(url=self.url, headers=self.headers)
+        req.encoding = 'utf-8'
+        html = req.text
+        soup = BeautifulSoup(html, features="lxml")
+        bf = soup.find('div', id='list')
+        a = bf.find_all('a')
+        self.nums = len(a)
+        for each in a:
+            self.names.append(each.string)
+            self.urls.append(self.target + each.get('href'))
+        print('链接获取完成')
+
+    def get_content(self):
+        print('开始爬取并写入文件')
+        name = input('要将该小说命名为：')
+        with open(name + '.txt', 'a', encoding='utf-8') as f:
+            for num in range(self.nums+1):
+                req = requests.get(self.urls[num], headers=self.headers)
+                req.encoding = 'utf-8'
+                html = req.text
+                soup = BeautifulSoup(html, features="lxml")
+                texts = soup.find('div', id="content")
+                f.write(self.names[num] + '\n' + texts.text.strip().replace('\xa0'*4, '\n')+'\n')
+                sys.stdout.write("  已完成:{:.2f}%{}".format((num / Dl.nums * 100), '\r'))
+                sys.stdout.flush()
+        print('工作完成')
+
+
+if __name__ == "__main__":
+    Dl = GetTxt()
+    Dl.get_url()
+    Dl.get_content()
+
+
